@@ -119,7 +119,6 @@ export default function AddService() {
     console.log('[AddService] ========== FORM SUBMISSION START ==========');
     console.log('[AddService] User UID:', user?.uid);
     console.log('[AddService] Form data:', formData);
-    console.log('[AddService] File:', uploadedFile?.name, uploadedFile?.size);
     
     // Safety timeout to prevent button from getting stuck
     const submitTimeout = setTimeout(() => {
@@ -129,27 +128,13 @@ export default function AddService() {
     }, 30000);
 
     try {
-      let documentUrl = null;
+      // Skip file upload for now - just store document reference
+      // TODO: Configure Firebase Storage CORS and enable file uploads
+      const documentUrl = uploadedFile ? `file-${Date.now()}` : null;
+      
+      console.log('[AddService] 📝 Document reference:', documentUrl);
 
-      // Upload file to Cloud Storage if provided
-      if (uploadedFile && user?.uid) {
-        console.log('[AddService] 📁 Starting file upload...');
-        try {
-          const storage = getStorage();
-          const fileName = `${user.uid}_${Date.now()}_${uploadedFile.name}`;
-          const fileRef = ref(storage, `service-documents/${fileName}`);
-          
-          console.log('[AddService] Uploading to:', `service-documents/${fileName}`);
-          const snapshot = await uploadBytes(fileRef, uploadedFile);
-          documentUrl = await getDownloadURL(snapshot.ref);
-          console.log('[AddService] ✅ File uploaded:', documentUrl);
-        } catch (uploadErr) {
-          console.error('[AddService] ❌ File upload failed:', uploadErr);
-          throw new Error(`File upload failed: ${uploadErr.message}`);
-        }
-      }
-
-      // Add service data with document URL
+      // Add service data
       const serviceDataWithDoc = {
         ...formData,
         documentUrl
