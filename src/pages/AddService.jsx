@@ -147,6 +147,7 @@ export default function AddService() {
     } catch (err) {
       console.error('Error submitting service:', err);
       setErrors({ submit: err.message || 'Failed to add service. Please try again.' });
+    } finally {
       setIsSubmitting(false);
     }
   };
