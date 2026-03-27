@@ -5,7 +5,7 @@ import { getAnalytics } from "firebase/analytics";
 // Your Firebase configuration
 // IMPORTANT: Replace with actual config from Firebase Console
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY || "YOUR_NEW_API_KEY_HERE",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "YOUR_NEW_API_KEY_HERE",
   authDomain: "localconnect-f077b.firebaseapp.com",
   projectId: "localconnect-f077b",
   storageBucket: "localconnect-f077b.firebasestorage.app",
