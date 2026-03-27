@@ -34,10 +34,12 @@ export const useProviderServices = () => {
   // Add new service
   const addService = useCallback(async (serviceData) => {
     if (!user?.uid) {
+      console.error('[useProviderServices] ❌ User not authenticated');
       setError('User not authenticated');
       return null;
     }
 
+    console.log('[useProviderServices] 📝 Starting addService with user UID:', user.uid);
     setLoading(true);
     setError(null);
     try {
@@ -67,15 +69,22 @@ export const useProviderServices = () => {
         updatedAt: Timestamp.now()
       };
 
+      console.log('[useProviderServices] 🔄 Attempting to write to Firestore:', newService);
       const docRef = await addDoc(collection(db, 'services'), newService);
+      console.log('[useProviderServices] ✅ Document created with ID:', docRef.id);
       
       // Add to local state
       setServices(prev => [...prev, { id: docRef.id, ...newService }]);
+      console.log('[useProviderServices] ✅ Added to local state');
       
       return docRef.id;
     } catch (err) {
+      console.error('[useProviderServices] ❌ Error adding service:', {
+        message: err.message,
+        code: err.code,
+        stack: err.stack
+      });
       setError(err.message);
-      console.error('Error adding service:', err);
       throw err;
     } finally {
       setLoading(false);

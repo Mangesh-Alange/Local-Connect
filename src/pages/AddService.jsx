@@ -116,25 +116,37 @@ export default function AddService() {
 
     setIsSubmitting(true);
     
+    console.log('[AddService] ========== FORM SUBMISSION START ==========');
+    console.log('[AddService] User UID:', user?.uid);
+    console.log('[AddService] Form data:', formData);
+    console.log('[AddService] File:', uploadedFile?.name, uploadedFile?.size);
+    
     // Safety timeout to prevent button from getting stuck
     const submitTimeout = setTimeout(() => {
+      console.error('[AddService] ❌ TIMEOUT: Request exceeded 30 seconds');
       setIsSubmitting(false);
       setErrors({ submit: 'Request timed out. Please try again.' });
-    }, 30000); // 30 second timeout
+    }, 30000);
 
     try {
       let documentUrl = null;
 
       // Upload file to Cloud Storage if provided
       if (uploadedFile && user?.uid) {
-        console.log('[AddService] Starting file upload...');
-        const storage = getStorage();
-        const fileName = `${user.uid}_${Date.now()}_${uploadedFile.name}`;
-        const fileRef = ref(storage, `service-documents/${fileName}`);
-        
-        const snapshot = await uploadBytes(fileRef, uploadedFile);
-        documentUrl = await getDownloadURL(snapshot.ref);
-        console.log('[AddService] ✅ File uploaded to Cloud Storage:', documentUrl);
+        console.log('[AddService] 📁 Starting file upload...');
+        try {
+          const storage = getStorage();
+          const fileName = `${user.uid}_${Date.now()}_${uploadedFile.name}`;
+          const fileRef = ref(storage, `service-documents/${fileName}`);
+          
+          console.log('[AddService] Uploading to:', `service-documents/${fileName}`);
+          const snapshot = await uploadBytes(fileRef, uploadedFile);
+          documentUrl = await getDownloadURL(snapshot.ref);
+          console.log('[AddService] ✅ File uploaded:', documentUrl);
+        } catch (uploadErr) {
+          console.error('[AddService] ❌ File upload failed:', uploadErr);
+          throw new Error(`File upload failed: ${uploadErr.message}`);
+        }
       }
 
       // Add service data with document URL
@@ -143,25 +155,34 @@ export default function AddService() {
         documentUrl
       };
 
-      console.log('[AddService] Adding service to Firestore...');
-      await addService(serviceDataWithDoc);
-      console.log('[AddService] ✅ Service added successfully');
+      console.log('[AddService] 🚀 Adding service to Firestore...');
+      console.log('[AddService] Service data:', serviceDataWithDoc);
+      
+      const serviceId = await addService(serviceDataWithDoc);
+      console.log('[AddService] ✅ Service added successfully with ID:', serviceId);
       
       // Clear timeout since operation completed
       clearTimeout(submitTimeout);
       
       // Show success screen
       setIsSuccess(true);
+      console.log('[AddService] 🎉 Showing success screen');
       
       // Redirect to provider dashboard after 2 seconds
       setTimeout(() => {
+        console.log('[AddService] 📍 Redirecting to provider dashboard');
         navigate('/provider-dashboard');
       }, 2000);
     } catch (err) {
-      console.error('[AddService] Error submitting service:', err);
+      console.error('[AddService] ❌ ERROR during submission:', {
+        message: err.message,
+        code: err.code,
+        stack: err.stack
+      });
       clearTimeout(submitTimeout);
-      setErrors({ submit: err.message || 'Failed to add service. Please try again.' });
+      setErrors({ submit: `Error: ${err.message}` });
     } finally {
+      console.log('[AddService] ========== FORM SUBMISSION END ==========');
       setIsSubmitting(false);
     }
   };
