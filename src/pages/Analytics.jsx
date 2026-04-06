@@ -39,6 +39,9 @@ export default function Analytics() {
     const fetchData = async () => {
       setLoading(true); setError(null);
       try {
+        // Warm up the backend (fixes Render cold start)
+        await fetch(`${API_BASE}/kpi?area=All`).catch(() => {});
+        
         const q = region === 'All India' ? 'All' : region;
         const [kpiRes, demandRes, catRes, gapsRes, boomRes, recRes, priceRes, predRes, areaRes] = await Promise.all([
           fetch(`${API_BASE}/kpi?area=${q}`).then(r => r.json()),
@@ -57,8 +60,9 @@ export default function Analytics() {
           trust: kpiRes.avg_trust_score || 94.2
         });
         setInsights({ booming: boomRes||[], recommendations: recRes||[], prices: priceRes||[], predictions: predRes||[], areaInsights: areaRes||[] });
-      } catch {
-        setError('Backend unavailable. Please start the server.');
+      } catch (err) {
+        console.error('Analytics error:', err);
+        setError('Failed to load analytics. Please refresh the page.');
       } finally { setLoading(false); }
     };
     fetchData();
