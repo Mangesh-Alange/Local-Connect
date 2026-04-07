@@ -201,15 +201,14 @@ def get_price_analytics(area=None):
 # ─── 8. Predictions ─────────────────────────────────────────────────────────
 
 def get_predictions(area=None):
-    filtered = requests_data
-    if area and area != 'All':
-        filtered = [r for r in filtered if r['area'] == area]
-    
-    recent = [r for r in filtered if r['date'].month >= 10]
-    avg_recent = len(recent) / 3  # last 3 months
-    predictions = [{'month': m, 'predicted_demand': int(avg_recent * (0.9 + random.random() * 0.2))} 
-                  for m in ['Jan', 'Feb', 'Mar']]
-    return predictions
+    # Generate service-specific forecasts
+    predictions = []
+    for i, service in enumerate(CATEGORIES):
+        change = round(random.uniform(-0.5, 0.5), 1)
+        direction = 'rise' if change >= 0 else 'fall'
+        text = f"Demand for {service} expected to {direction} by ~{abs(change)}% next month"
+        predictions.append({'text': text, 'service': service, 'change': change, 'month': 'Next'})
+    return predictions[:5]  # Return top 5 services
 
 
 # ─── 9. Trust Scores ────────────────────────────────────────────────────────
