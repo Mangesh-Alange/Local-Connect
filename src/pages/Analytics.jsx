@@ -375,7 +375,7 @@ export default function Analytics() {
             {insights.predictions.slice(0, 6).map((p, i) => (
               <div key={i} className="flex items-start gap-3 p-3.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/50 rounded-xl">
                 <span className="w-6 h-6 rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
-                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{p.month}: {p.predicted_demand} requests expected</p>
+                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{p.text}</p>
               </div>
             ))}
           </div>
