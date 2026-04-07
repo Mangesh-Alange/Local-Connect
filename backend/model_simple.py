@@ -201,13 +201,29 @@ def get_price_analytics(area=None):
 # ─── 8. Predictions ─────────────────────────────────────────────────────────
 
 def get_predictions(area=None):
-    # Generate service-specific forecasts
+    # Generate service-specific forecasts based on area-specific demand
+    filtered = requests_data
+    if area and area != 'All':
+        filtered = [r for r in filtered if r['area'] == area]
+    
     predictions = []
-    for i, service in enumerate(CATEGORIES):
-        change = round(random.uniform(-0.5, 0.5), 1)
+    for service in CATEGORIES:
+        service_requests = [r for r in filtered if r['category'] == service]
+        if not service_requests:
+            # If no data for this service in the area, use random forecast
+            change = round(random.uniform(-0.5, 0.5), 1)
+        else:
+            # Calculate trend based on actual demand - first half vs second half of year
+            mid = len(service_requests) // 2
+            first_half_avg = len([r for r in service_requests[:mid]]) / max(1, mid) if mid > 0 else 0
+            second_half_avg = len([r for r in service_requests[mid:]]) / max(1, len(service_requests) - mid) if mid < len(service_requests) else 0
+            change = round((second_half_avg - first_half_avg) / max(0.1, first_half_avg) * 100, 1) if first_half_avg > 0 else round(random.uniform(-0.5, 0.5), 1)
+            change = max(-100, min(100, change))  # Cap between -100 and 100
+        
         direction = 'rise' if change >= 0 else 'fall'
         text = f"Demand for {service} expected to {direction} by ~{abs(change)}% next month"
         predictions.append({'text': text, 'service': service, 'change': change, 'month': 'Next'})
+    
     return predictions[:5]  # Return top 5 services
 
 
